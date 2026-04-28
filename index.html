@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Ising Model — Monte Carlo Simulation</title>
+<style>
+  :root {
+    --bg:       #0b0e17;
+    --surface:  #111620;
+    --surface2: #18202e;
+    --border:   #222d40;
+    --border2:  #2c3a52;
+    --text:     #bfcde0;
+    --text-dim: #506070;
+    --num:      #7ab6f5;
+    --blue:     #2868b8;
+    --blue-b:   #4a90e0;
+    --red:      #b83820;
+    --red-b:    #e04828;
+    --tc:       #c84828;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #app {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  /* ── Lattice ── */
+  .lattice-panel { flex: 0 0 auto; }
+  #lattice-canvas {
+    display: block;
+    border: 1px solid var(--border2);
+    image-rendering: pixelated;
+  }
+  .canvas-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: .06em;
+  }
+  .spin-legend { display: flex; gap: 10px; }
+  .spin-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+
+  /* ── Controls ── */
+  .controls-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+  }
+
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 16px;
+  }
+  .box-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .ctrl-row:last-child { margin-bottom: 0; }
+
+  .ctrl-lbl {
+    width: 18px;
+    font-size: 14px;
+    font-style: italic;
+    flex: 0 0 auto;
+    color: #c0cce0;
+  }
+  .ctrl-lbl-plain {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: .05em;
+    flex: 0 0 auto;
+    width: 38px;
+  }
+
+  .slider-wrap {
+    flex: 1;
+    position: relative;
+    padding-bottom: 17px;
+  }
+  .slider-wrap.no-marker { padding-bottom: 0; }
+
+  input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--blue-b);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: var(--blue-b);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    cursor: pointer;
+  }
+
+  #tc-marker {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--tc);
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: .05em;
+  }
+  #tc-marker::before {
+    content: '▲';
+    display: block;
+    font-size: 7px;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+
+  .ctrl-val {
+    width: 38px;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--num);
+    flex: 0 0 auto;
+  }
+
+  select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    flex: 1;
+  }
+
+  .btn-row { display: flex; gap: 8px; }
+  button {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .1s, border-color .1s;
+    white-space: nowrap;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+  }
+  button:hover { background: var(--border2); }
+  button.primary { background: var(--blue); border-color: var(--blue-b); color: #fff; }
+  button.primary:hover { background: var(--blue-b); }
+  button.danger { background: #1a1018; border-color: var(--red); color: var(--red-b); }
+  button.danger:hover { background: #2a1820; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="lattice-panel">
+    <canvas id="lattice-canvas" width="500" height="500"></canvas>
+    <div class="canvas-footer">
+      <span id="canvas-label">N = 64 · Sweep 0</span>
+      <span class="spin-legend">
+        <span><span class="spin-dot" style="background:#2a70c0"></span>s = +1</span>
+        <span><span class="spin-dot" style="background:#f0ede4; border:1px solid #444"></span>s = −1</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="controls-panel">
+
+    <div class="box">
+      <div class="box-title">Parameters</div>
+
+      <div class="ctrl-row" style="margin-bottom:20px">
+        <span class="ctrl-lbl">T</span>
+        <div class="slider-wrap">
+          <input type="range" id="T-slider" min="0.1" max="5.0" step="0.01" value="2.5">
+          <div id="tc-marker">Tc</div>
+        </div>
+        <span class="ctrl-val" id="T-val">2.50</span>
+      </div>
+
+      <div class="ctrl-row" style="margin-bottom:16px">
+        <span class="ctrl-lbl">h</span>
+        <div class="slider-wrap no-marker">
+          <input type="range" id="h-slider" min="-1.0" max="1.0" step="0.01" value="0.0">
+        </div>
+        <span class="ctrl-val" id="h-val">0.00</span>
+      </div>
+
+      <div class="ctrl-row" style="margin-bottom:12px">
+        <span class="ctrl-lbl-plain">N</span>
+        <select id="N-select">
+          <option value="64" selected>64 × 64</option>
+          <option value="128">128 × 128</option>
+          <option value="256">256 × 256</option>
+          <option value="512">512 × 512</option>
+        </select>
+      </div>
+
+      <div class="ctrl-row">
+        <span class="ctrl-lbl-plain">Speed</span>
+        <div class="slider-wrap no-marker">
+          <input type="range" id="speed-slider" min="1" max="20" step="1" value="5">
+        </div>
+        <span class="ctrl-val" id="speed-val" style="width:24px">5</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Controls</div>
+      <div class="btn-row">
+        <button class="primary" id="start-btn">▶ Start</button>
+        <button class="danger"  id="reset-btn">↺ Reset</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const TC = 2 / Math.log(1 + Math.sqrt(2));
+
+let N = 64, T = 2.5, h = 0.0, sweepsPerFrame = 5;
+let running = false, sweepCount = 0;
+let lattice, totalM, totalE;
+let expTableArr = new Float64Array(10);
+let animId = null;
+
+function initLattice() {
+  lattice = new Int8Array(N * N);
+  for (let k = 0; k < N * N; k++) lattice[k] = Math.random() < 0.5 ? -1 : 1;
+  recalcTotals();
+  rebuildExpTable();
+  sweepCount = 0;
+}
+
+function recalcTotals() {
+  let sumS = 0, sumE = 0;
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      const s = lattice[i*N+j];
+      sumS += s;
+      sumE -= s * lattice[i*N + ((j+1)%N)] + s * lattice[((i+1)%N)*N + j];
+    }
+  }
+  totalM = sumS;
+  totalE = sumE - h * sumS;
+}
+
+function rebuildExpTable() {
+  for (let si = 0; si < 2; si++) {
+    const s = si === 0 ? -1 : 1;
+    for (let ki = 0; ki < 5; ki++) {
+      const dE = 2 * s * ((ki-2)*2 + h);
+      expTableArr[si*5+ki] = dE <= 0 ? 2.0 : Math.exp(-dE / T);
+    }
+  }
+}
+
+function runOneSweep() {
+  const N2 = N*N;
+  for (let k = 0; k < N2; k++) {
+    const i = (Math.random()*N)|0, j = (Math.random()*N)|0;
+    const idx = i*N+j, s = lattice[idx];
+    const snn = lattice[((i-1+N)%N)*N+j] + lattice[((i+1)%N)*N+j]
+               + lattice[i*N+((j-1+N)%N)] + lattice[i*N+((j+1)%N)];
+    const prob = expTableArr[(s===-1?0:1)*5 + ((snn>>1)+2)];
+    if (prob >= 1 || Math.random() < prob) {
+      lattice[idx] = -s;
+      totalM += -2*s;
+      totalE += 2*s*(snn+h);
+    }
+  }
+  sweepCount++;
+}
+
+const lCanvas = document.getElementById('lattice-canvas');
+const lCtx    = lCanvas.getContext('2d');
+
+function drawLattice() {
+  const size = lCanvas.width, cs = size/N;
+  const img = lCtx.createImageData(size, size), d = img.data;
+  for (let i = 0; i < N; i++) {
+    const py0=Math.floor(i*cs), py1=Math.floor((i+1)*cs);
+    for (let j = 0; j < N; j++) {
+      const up = lattice[i*N+j]===1;
+      const px0=Math.floor(j*cs), px1=Math.floor((j+1)*cs);
+      for (let py=py0; py<py1; py++) for (let px=px0; px<px1; px++) {
+        const o=(py*size+px)*4;
+        d[o]=up?42:240; d[o+1]=up?112:237; d[o+2]=up?192:228; d[o+3]=255;
+      }
+    }
+  }
+  lCtx.putImageData(img, 0, 0);
+  document.getElementById('canvas-label').textContent = `N = ${N} · Sweep ${sweepCount}`;
+}
+
+function animLoop() {
+  if (!running) { animId=null; return; }
+  for (let s=0; s<sweepsPerFrame; s++) runOneSweep();
+  drawLattice();
+  animId = requestAnimationFrame(animLoop);
+}
+
+// Tc marker position
+const pct = (TC-0.1)/(5.0-0.1)*100;
+document.getElementById('tc-marker').style.left = pct+'%';
+
+document.getElementById('T-slider').addEventListener('input', function() {
+  T = parseFloat(this.value);
+  document.getElementById('T-val').textContent = T.toFixed(2);
+  rebuildExpTable();
+});
+
+document.getElementById('h-slider').addEventListener('input', function() {
+  h = parseFloat(this.value);
+  document.getElementById('h-val').textContent = h.toFixed(2);
+  rebuildExpTable();
+  if (lattice) recalcTotals();
+});
+
+document.getElementById('N-select').addEventListener('change', function() {
+  const was = running; running = false;
+  N = parseInt(this.value);
+  initLattice(); drawLattice();
+  if (was) { running=true; if (!animId) animLoop(); }
+});
+
+document.getElementById('speed-slider').addEventListener('input', function() {
+  sweepsPerFrame = parseInt(this.value);
+  document.getElementById('speed-val').textContent = sweepsPerFrame;
+});
+
+document.getElementById('start-btn').addEventListener('click', function() {
+  if (running) { running=false; this.textContent='▶ Start'; }
+  else {
+    if (!lattice) initLattice();
+    running=true; this.textContent='⏸ Pause';
+    if (!animId) animLoop();
+  }
+});
+
+document.getElementById('reset-btn').addEventListener('click', function() {
+  running=false;
+  document.getElementById('start-btn').textContent='▶ Start';
+  initLattice(); drawLattice();
+});
+
+initLattice();
+drawLattice();
+</script>
+</body>
+</html>
