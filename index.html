@@ -30,21 +30,25 @@
     font-size: 13px;
     min-height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
+    padding: 16px;
   }
 
   #app {
     display: flex;
-    gap: 18px;
-    align-items: flex-start;
-    padding: 24px;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 520px;
   }
 
   /* ── Lattice ── */
-  .lattice-panel { flex: 0 0 auto; }
+  .lattice-panel { width: 100%; }
   #lattice-canvas {
     display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     border: 1px solid var(--border2);
     image-rendering: pixelated;
   }
@@ -70,7 +74,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 300px;
+    width: 100%;
   }
 
   .box {
@@ -78,6 +82,7 @@
     border: 1px solid var(--border);
     border-radius: 5px;
     padding: 14px 16px;
+    width: 100%;
   }
   .box-title {
     font-size: 9px;
@@ -130,14 +135,14 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px; height: 14px;
+    width: 20px; height: 20px;
     background: var(--blue-b);
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid var(--bg);
   }
   input[type=range]::-moz-range-thumb {
-    width: 12px; height: 12px;
+    width: 18px; height: 18px;
     background: var(--blue-b);
     border-radius: 50%;
     border: 2px solid var(--bg);
@@ -178,8 +183,8 @@
     color: var(--text);
     border: 1px solid var(--border2);
     border-radius: 3px;
-    padding: 5px 8px;
-    font-size: 12px;
+    padding: 8px 8px;
+    font-size: 13px;
     cursor: pointer;
     outline: none;
     flex: 1;
@@ -188,8 +193,8 @@
   .btn-row { display: flex; gap: 8px; }
   button {
     flex: 1;
-    padding: 8px 0;
-    font-size: 11px;
+    padding: 12px 0;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -202,6 +207,7 @@
     color: var(--text);
   }
   button:hover { background: var(--border2); }
+  button:active { opacity: 0.8; }
   button.primary { background: var(--blue); border-color: var(--blue-b); color: #fff; }
   button.primary:hover { background: var(--blue-b); }
   button.danger { background: #1a1018; border-color: var(--red); color: var(--red-b); }
@@ -211,6 +217,7 @@
 <body>
 <div id="app">
 
+  <!-- Lattice Canvas -->
   <div class="lattice-panel">
     <canvas id="lattice-canvas" width="500" height="500"></canvas>
     <div class="canvas-footer">
@@ -222,6 +229,7 @@
     </div>
   </div>
 
+  <!-- Controls below -->
   <div class="controls-panel">
 
     <div class="box">
@@ -359,7 +367,6 @@ function animLoop() {
   animId = requestAnimationFrame(animLoop);
 }
 
-// Tc marker position
 const pct = (TC-0.1)/(5.0-0.1)*100;
 document.getElementById('tc-marker').style.left = pct+'%';
 
