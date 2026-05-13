@@ -30,28 +30,24 @@
     font-size: 13px;
     min-height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
+    padding: 16px;
   }
 
   #app {
     display: flex;
-    gap: 18px;
-    align-items: flex-start;
-    padding: 24px;
-  }
-
-  /* ── Left column: lattice + M(t) chart ── */
-  .left-col {
-    display: flex;
     flex-direction: column;
-    gap: 10px;
-    flex: 0 0 auto;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    max-width: 520px;
   }
 
   /* ── Lattice ── */
   #lattice-canvas {
     display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     border: 1px solid var(--border2);
     image-rendering: pixelated;
   }
@@ -72,31 +68,7 @@
     vertical-align: middle;
   }
 
-  /* ── M(t) chart ── */
-  .chart-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 10px 6px;
-  }
-  .chart-title {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 5px;
-  }
-  #mt-canvas { display: block; }
-
-  /* ── Controls ── */
-  .controls-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 300px;
-  }
-
+  /* ── Controls box ── */
   .box {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -133,7 +105,7 @@
     color: var(--text-dim);
     letter-spacing: .05em;
     flex: 0 0 auto;
-    width: 38px;
+    width: 40px;
   }
 
   .slider-wrap {
@@ -154,14 +126,14 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px; height: 14px;
+    width: 22px; height: 22px;
     background: var(--blue-b);
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid var(--bg);
   }
   input[type=range]::-moz-range-thumb {
-    width: 12px; height: 12px;
+    width: 20px; height: 20px;
     background: var(--blue-b);
     border-radius: 50%;
     border: 2px solid var(--bg);
@@ -190,10 +162,10 @@
   }
 
   .ctrl-val {
-    width: 38px;
+    width: 40px;
     text-align: right;
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--num);
     flex: 0 0 auto;
   }
@@ -203,8 +175,8 @@
     color: var(--text);
     border: 1px solid var(--border2);
     border-radius: 3px;
-    padding: 5px 8px;
-    font-size: 12px;
+    padding: 8px;
+    font-size: 13px;
     cursor: pointer;
     outline: none;
     flex: 1;
@@ -213,8 +185,8 @@
   .btn-row { display: flex; gap: 8px; }
   button {
     flex: 1;
-    padding: 8px 0;
-    font-size: 11px;
+    padding: 13px 0;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -226,98 +198,116 @@
     background: var(--surface2);
     color: var(--text);
   }
-  button:hover { background: var(--border2); }
+  button:hover  { background: var(--border2); }
+  button:active { opacity: .8; }
   button.primary { background: var(--blue); border-color: var(--blue-b); color: #fff; }
   button.primary:hover { background: var(--blue-b); }
   button.danger { background: #1a1018; border-color: var(--red); color: var(--red-b); }
   button.danger:hover { background: #2a1820; }
-  button.type-btn { flex:1; padding:6px 0; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border-radius:4px; cursor:pointer; border:1px solid var(--border2); background:var(--surface2); color:var(--text-dim); transition:all .1s; }
-  button.type-btn:hover { background:var(--border2); color:var(--text); }
-  button.type-btn.active { background:#1a2a18; border-color:#40c878; color:#40c878; }
+  button.type-btn {
+    padding: 10px 0;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  button.type-btn.active {
+    background: #1a2a18;
+    border-color: #40c878;
+    color: #40c878;
+  }
+
+  /* ── M(t) chart ── */
+  .chart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 10px 8px;
+  }
+  .chart-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  #mt-canvas { display: block; width: 100%; }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- Left: lattice + M(t) chart -->
-  <div class="left-col">
-    <div>
-      <canvas id="lattice-canvas" width="500" height="500"></canvas>
-      <div class="canvas-footer">
-        <span id="canvas-label">N = 256 · Sweep 0</span>
-        <span class="spin-legend">
-          <span><span class="spin-dot" style="background:#2a70c0"></span>s = +1</span>
-          <span><span class="spin-dot" style="background:#f0ede4; border:1px solid #444"></span>s = −1</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="chart-box">
-      <div class="chart-title">M(t) — Magnetization / site (last 1800 sweeps)</div>
-      <canvas id="mt-canvas" width="500" height="130"></canvas>
+  <!-- 1. 시뮬레이션 화면 -->
+  <div>
+    <canvas id="lattice-canvas" width="500" height="500"></canvas>
+    <div class="canvas-footer">
+      <span id="canvas-label">N = 256 · Sweep 0</span>
+      <span class="spin-legend">
+        <span><span class="spin-dot" style="background:#2a70c0"></span>s = +1</span>
+        <span><span class="spin-dot" style="background:#f0ede4; border:1px solid #444"></span>s = −1</span>
+      </span>
     </div>
   </div>
 
-  <!-- Right: controls -->
-  <div class="controls-panel">
+  <!-- 2. 조절 버튼 -->
+  <div class="box">
+    <div class="box-title">Parameters</div>
 
-    <div class="box">
-      <div class="box-title">Parameters</div>
-
-      <div class="ctrl-row" style="margin-bottom:20px">
-        <span class="ctrl-lbl">T</span>
-        <div class="slider-wrap">
-          <input type="range" id="T-slider" min="0.1" max="7.0" step="0.01" value="2.5">
-          <div id="tc-marker">Tc</div>
-        </div>
-        <span class="ctrl-val" id="T-val">2.50</span>
+    <div class="ctrl-row" style="margin-bottom:22px">
+      <span class="ctrl-lbl">T</span>
+      <div class="slider-wrap">
+        <input type="range" id="T-slider" min="0.1" max="7.0" step="0.01" value="2.5">
+        <div id="tc-marker">Tc</div>
       </div>
-
-      <div class="ctrl-row" style="margin-bottom:16px">
-        <span class="ctrl-lbl">h</span>
-        <div class="slider-wrap no-marker">
-          <input type="range" id="h-slider" min="-1.0" max="1.0" step="0.01" value="0.0">
-        </div>
-        <span class="ctrl-val" id="h-val">0.00</span>
-      </div>
-
-      <div class="ctrl-row" style="margin-bottom:12px">
-        <span class="ctrl-lbl-plain">N</span>
-        <select id="N-select">
-          <option value="64">64 × 64</option>
-          <option value="128">128 × 128</option>
-          <option value="256" selected>256 × 256</option>
-          <option value="512">512 × 512</option>
-        </select>
-      </div>
-
-      <div class="ctrl-row">
-        <span class="ctrl-lbl-plain">Speed</span>
-        <div class="slider-wrap no-marker">
-          <input type="range" id="speed-slider" min="1" max="20" step="1" value="5">
-        </div>
-        <span class="ctrl-val" id="speed-val" style="width:24px">5</span>
-      </div>
+      <span class="ctrl-val" id="T-val">2.50</span>
     </div>
 
-    <div class="box">
-      <div class="box-title">Controls</div>
-      <div class="btn-row" style="margin-bottom:9px">
-        <button class="primary" id="start-btn">▶ Start</button>
-        <button class="danger"  id="reset-btn">↺ Reset</button>
+    <div class="ctrl-row" style="margin-bottom:18px">
+      <span class="ctrl-lbl">h</span>
+      <div class="slider-wrap no-marker">
+        <input type="range" id="h-slider" min="-1.0" max="1.0" step="0.01" value="0.0">
       </div>
-      <div style="display:flex;gap:6px">
-        <button class="type-btn active" id="ferro-btn" onclick="setJ(1.5)">Ferromagnetic</button>
-        <button class="type-btn" id="antiferro-btn" onclick="setJ(-1.5)">Antiferromagnetic</button>
-      </div>
+      <span class="ctrl-val" id="h-val">0.00</span>
     </div>
 
+    <div class="ctrl-row" style="margin-bottom:14px">
+      <span class="ctrl-lbl-plain">N</span>
+      <select id="N-select">
+        <option value="64">64 × 64</option>
+        <option value="128">128 × 128</option>
+        <option value="256" selected>256 × 256</option>
+        <option value="512">512 × 512</option>
+      </select>
+    </div>
+
+    <div class="ctrl-row" style="margin-bottom:16px">
+      <span class="ctrl-lbl-plain">Speed</span>
+      <div class="slider-wrap no-marker">
+        <input type="range" id="speed-slider" min="1" max="20" step="1" value="5">
+      </div>
+      <span class="ctrl-val" id="speed-val" style="width:28px">5</span>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="primary" id="start-btn">▶ Start</button>
+      <button class="danger"  id="reset-btn">↺ Reset</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="type-btn active" id="ferro-btn" onclick="setJ(1.5)">Ferromagnetic</button>
+      <button class="type-btn" id="antiferro-btn" onclick="setJ(-1.5)">Antiferromagnetic</button>
+    </div>
   </div>
+
+  <!-- 3. 그래프 -->
+  <div class="chart-box">
+    <div class="chart-title">M(t) — Magnetization / site (last 1800 sweeps)</div>
+    <canvas id="mt-canvas" width="500" height="140"></canvas>
+  </div>
+
 </div>
 
 <script>
 let J  = 1.5;
-const TC_BASE = 2 / Math.log(1 + Math.sqrt(2)); // Tc per unit J
+const TC_BASE = 2 / Math.log(1 + Math.sqrt(2));
 function getTC() { return TC_BASE * Math.abs(J); }
 const T_SLIDER_MAX = 7.0;
 
@@ -334,13 +324,10 @@ let running = false, sweepCount = 0;
 let lattice, totalM, totalE;
 let expTableArr = new Float64Array(10);
 let animId = null;
-let mHistory = [];   // rolling last-400 M/site values
+let mHistory = [];
 
-// ─── Physics ────────────────────────────────────────
 function initLattice() {
   lattice = new Int8Array(N * N);
-
-  // Blob init
   const bs = Math.max(4, (N / 8) | 0);
   for (let i = 0; i < N; i += bs)
     for (let j2 = 0; j2 < N; j2 += bs) {
@@ -349,91 +336,70 @@ function initLattice() {
         for (let dj = 0; dj < bs && j2+dj < N; dj++)
           lattice[(i+di)*N+(j2+dj)] = val;
     }
-
-  // 고온 예비 평형화 (T=3.5, 200 sweep)
   recalcTotals();
-  const savedT = T;
-  T = 3.5;
+  const savedT = T; T = 3.5;
   for (let s = 0; s < 200; s++) runOneSweepRaw(T);
-  T = savedT;
-  rebuildExpTable();
-  recalcTotals();
-  sweepCount = 0;
-  mHistory = [];
+  T = savedT; rebuildExpTable(); recalcTotals();
+  sweepCount = 0; mHistory = [];
 }
 
 function runOneSweepRaw(temp) {
   const N2 = N*N;
   for (let k = 0; k < N2; k++) {
-    const i = (Math.random()*N)|0, jj = (Math.random()*N)|0;
-    const idx = i*N+jj, s = lattice[idx];
-    const snn = lattice[((i-1+N)%N)*N+jj] + lattice[((i+1)%N)*N+jj]
-               + lattice[i*N+((jj-1+N)%N)] + lattice[i*N+((jj+1)%N)];
-    const dE = 2*J*s*snn + 2*h*s;
-    if (dE <= 0 || Math.random() < Math.exp(-dE/temp)) {
-      lattice[idx] = -s;
-      totalM += -2*s;
-      totalE += dE;
-    }
+    const i=(Math.random()*N)|0, jj=(Math.random()*N)|0;
+    const idx=i*N+jj, s=lattice[idx];
+    const snn=lattice[((i-1+N)%N)*N+jj]+lattice[((i+1)%N)*N+jj]
+             +lattice[i*N+((jj-1+N)%N)]+lattice[i*N+((jj+1)%N)];
+    const dE=2*J*s*snn+2*h*s;
+    if (dE<=0||Math.random()<Math.exp(-dE/temp)) { lattice[idx]=-s; totalM+=-2*s; totalE+=dE; }
   }
 }
 
 function recalcTotals() {
-  let sumS = 0, sumE = 0;
-  for (let i = 0; i < N; i++) {
-    for (let jj = 0; jj < N; jj++) {
-      const s = lattice[i*N+jj];
-      sumS += s;
-      sumE -= J * (s * lattice[i*N + ((jj+1)%N)] + s * lattice[((i+1)%N)*N + jj]);
-    }
+  let sumS=0, sumE=0;
+  for (let i=0; i<N; i++) for (let jj=0; jj<N; jj++) {
+    const s=lattice[i*N+jj]; sumS+=s;
+    sumE-=J*(s*lattice[i*N+((jj+1)%N)]+s*lattice[((i+1)%N)*N+jj]);
   }
-  totalM = sumS;
-  totalE = sumE - h * sumS;
+  totalM=sumS; totalE=sumE-h*sumS;
 }
 
 function rebuildExpTable() {
-  // dE = 2*J*s*snn + 2*h*s,  snn ∈ {-4,-2,0,2,4}
-  for (let si = 0; si < 2; si++) {
-    const s = si === 0 ? -1 : 1;
-    for (let ki = 0; ki < 5; ki++) {
-      const snn = (ki - 2) * 2;
-      const dE  = 2*J*s*snn + 2*h*s;
-      expTableArr[si*5+ki] = dE <= 0 ? 2.0 : Math.exp(-dE / T);
+  for (let si=0; si<2; si++) {
+    const s=si===0?-1:1;
+    for (let ki=0; ki<5; ki++) {
+      const snn=(ki-2)*2, dE=2*J*s*snn+2*h*s;
+      expTableArr[si*5+ki]=dE<=0?2.0:Math.exp(-dE/T);
     }
   }
 }
 
 function runOneSweep() {
-  const N2 = N*N;
-  for (let k = 0; k < N2; k++) {
-    const i = (Math.random()*N)|0, jj = (Math.random()*N)|0;
-    const idx = i*N+jj, s = lattice[idx];
-    const snn = lattice[((i-1+N)%N)*N+jj] + lattice[((i+1)%N)*N+jj]
-               + lattice[i*N+((jj-1+N)%N)] + lattice[i*N+((jj+1)%N)];
-    const prob = expTableArr[(s===-1?0:1)*5 + ((snn>>1)+2)];
-    if (prob >= 1 || Math.random() < prob) {
-      lattice[idx] = -s;
-      totalM += -2*s;
-      totalE += 2*J*s*snn + 2*h*s;
-    }
+  const N2=N*N;
+  for (let k=0; k<N2; k++) {
+    const i=(Math.random()*N)|0, jj=(Math.random()*N)|0;
+    const idx=i*N+jj, s=lattice[idx];
+    const snn=lattice[((i-1+N)%N)*N+jj]+lattice[((i+1)%N)*N+jj]
+             +lattice[i*N+((jj-1+N)%N)]+lattice[i*N+((jj+1)%N)];
+    const prob=expTableArr[(s===-1?0:1)*5+((snn>>1)+2)];
+    if (prob>=1||Math.random()<prob) { lattice[idx]=-s; totalM+=-2*s; totalE+=2*J*s*snn+2*h*s; }
   }
   sweepCount++;
-  const m = totalM / (N*N);
-  mHistory.push(m);
-  if (mHistory.length > 1800) mHistory.shift();
+  mHistory.push(totalM/(N*N));
+  if (mHistory.length>1800) mHistory.shift();
 }
 
-// ─── Lattice render ──────────────────────────────────
-const lCanvas = document.getElementById('lattice-canvas');
-const lCtx    = lCanvas.getContext('2d');
+// ── Lattice render ──
+const lCanvas=document.getElementById('lattice-canvas');
+const lCtx=lCanvas.getContext('2d');
 
 function drawLattice() {
-  const size = lCanvas.width, cs = size/N;
-  const img = lCtx.createImageData(size, size), d = img.data;
-  for (let i = 0; i < N; i++) {
+  const size=lCanvas.width, cs=size/N;
+  const img=lCtx.createImageData(size,size), d=img.data;
+  for (let i=0; i<N; i++) {
     const py0=Math.floor(i*cs), py1=Math.floor((i+1)*cs);
-    for (let jj = 0; jj < N; jj++) {
-      const up = lattice[i*N+jj]===1;
+    for (let jj=0; jj<N; jj++) {
+      const up=lattice[i*N+jj]===1;
       const px0=Math.floor(jj*cs), px1=Math.floor((jj+1)*cs);
       for (let py=py0; py<py1; py++) for (let px=px0; px<px1; px++) {
         const o=(py*size+px)*4;
@@ -441,132 +407,110 @@ function drawLattice() {
       }
     }
   }
-  lCtx.putImageData(img, 0, 0);
-  document.getElementById('canvas-label').textContent = `N = ${N} · Sweep ${sweepCount}`;
+  lCtx.putImageData(img,0,0);
+  document.getElementById('canvas-label').textContent=`N = ${N} · Sweep ${sweepCount}`;
 }
 
-// ─── M(t) chart ──────────────────────────────────────
-const mtCanvas = document.getElementById('mt-canvas');
-const mtCtx    = mtCanvas.getContext('2d');
+// ── M(t) chart ──
+const mtCanvas=document.getElementById('mt-canvas');
+const mtCtx=mtCanvas.getContext('2d');
+
+function resizeMtCanvas() {
+  const w=mtCanvas.parentElement.clientWidth-20;
+  if (w>0) mtCanvas.width=w;
+}
 
 function drawMtChart() {
-  const W = mtCanvas.width, H = mtCanvas.height;
-  const P = {l:32, r:8, t:8, b:20};
-  const cw = W-P.l-P.r, ch = H-P.t-P.b;
-  const YMAX = 1/3;
-  const toY = m => P.t + ch * (1 - (m + YMAX) / (2 * YMAX));
+  const W=mtCanvas.width, H=mtCanvas.height;
+  const P={l:32,r:8,t:8,b:20};
+  const cw=W-P.l-P.r, ch=H-P.t-P.b;
+  const YMAX=1/3;
+  const toY=m=>P.t+ch*(1-(m+YMAX)/(2*YMAX));
 
-  mtCtx.fillStyle = '#111620';
-  mtCtx.fillRect(0, 0, W, H);
-
-  // Grid lines
-  for (const mv of [-1/3, -1/6, 0, 1/6, 1/3]) {
-    const y = toY(mv);
-    mtCtx.strokeStyle = mv === 0 ? '#2c3a52' : '#1a2230';
-    mtCtx.lineWidth = 1;
-    mtCtx.setLineDash(mv === 0 ? [4,4] : []);
-    mtCtx.beginPath(); mtCtx.moveTo(P.l, y); mtCtx.lineTo(P.l+cw, y); mtCtx.stroke();
+  mtCtx.fillStyle='#111620'; mtCtx.fillRect(0,0,W,H);
+  for (const mv of [-1/3,-1/6,0,1/6,1/3]) {
+    const y=toY(mv);
+    mtCtx.strokeStyle=mv===0?'#2c3a52':'#1a2230';
+    mtCtx.lineWidth=1;
+    mtCtx.setLineDash(mv===0?[4,4]:[]);
+    mtCtx.beginPath(); mtCtx.moveTo(P.l,y); mtCtx.lineTo(P.l+cw,y); mtCtx.stroke();
   }
   mtCtx.setLineDash([]);
+  mtCtx.fillStyle='#3e5060'; mtCtx.font='9px Courier New'; mtCtx.textAlign='right';
+  for (const mv of [-1/3,0,1/3]) mtCtx.fillText(mv.toFixed(2),P.l-3,toY(mv)+3);
+  mtCtx.fillStyle='#3e5060'; mtCtx.font='9px sans-serif'; mtCtx.textAlign='center';
+  mtCtx.fillText('sweep →',P.l+cw/2,H-3);
 
-  // Axis labels
-  mtCtx.fillStyle = '#3e5060';
-  mtCtx.font = '9px Courier New';
-  mtCtx.textAlign = 'right';
-  for (const mv of [-1/3, 0, 1/3])
-    mtCtx.fillText(mv.toFixed(2), P.l-3, toY(mv)+3);
-  mtCtx.fillStyle = '#3e5060';
-  mtCtx.font = '9px sans-serif';
-  mtCtx.textAlign = 'center';
-  mtCtx.fillText('sweep →', P.l + cw/2, H - 3);
-
-  // M curve
-  if (mHistory.length > 1) {
-    mtCtx.strokeStyle = '#4a90e0';
-    mtCtx.lineWidth = 1.5;
+  if (mHistory.length>1) {
+    mtCtx.strokeStyle='#4a90e0'; mtCtx.lineWidth=1.5;
     mtCtx.beginPath();
-    const n = mHistory.length;
-    for (let i = 0; i < n; i++) {
-      const x = P.l + cw * i / 1799;
-      const y = toY(mHistory[i]);
-      i === 0 ? mtCtx.moveTo(x, y) : mtCtx.lineTo(x, y);
+    for (let i=0; i<mHistory.length; i++) {
+      const x=P.l+cw*i/1799, y=toY(mHistory[i]);
+      i===0?mtCtx.moveTo(x,y):mtCtx.lineTo(x,y);
     }
     mtCtx.stroke();
   }
-
-  // Current M label
-  if (mHistory.length > 0) {
-    const m = mHistory[mHistory.length-1];
-    mtCtx.fillStyle = '#4a90e0';
-    mtCtx.font = 'bold 10px Courier New';
-    mtCtx.textAlign = 'left';
-    mtCtx.fillText(`M = ${m.toFixed(3)}`, P.l+5, P.t+12);
+  if (mHistory.length>0) {
+    const m=mHistory[mHistory.length-1];
+    mtCtx.fillStyle='#4a90e0'; mtCtx.font='bold 10px Courier New'; mtCtx.textAlign='left';
+    mtCtx.fillText(`M = ${m.toFixed(3)}`,P.l+5,P.t+12);
   }
 }
 
-// ─── Animation loop ──────────────────────────────────
+// ── Animation loop ──
 function animLoop() {
   if (!running) { animId=null; return; }
   for (let s=0; s<sweepsPerFrame; s++) runOneSweep();
-  drawLattice();
-  drawMtChart();
-  animId = requestAnimationFrame(animLoop);
+  drawLattice(); drawMtChart();
+  animId=requestAnimationFrame(animLoop);
 }
 
-// ─── Tc marker ───────────────────────────────────────
+// ── Tc marker ──
 function updateTcMarker() {
-  const pct = (getTC() - 0.1) / (T_SLIDER_MAX - 0.1) * 100;
-  const el  = document.getElementById('tc-marker');
-  el.style.left    = Math.min(100, Math.max(0, pct)) + '%';
-  el.style.opacity = Math.abs(h) < 0.005 ? '1' : '0';
+  const pct=(getTC()-0.1)/(T_SLIDER_MAX-0.1)*100;
+  const el=document.getElementById('tc-marker');
+  el.style.left=Math.min(100,Math.max(0,pct))+'%';
+  el.style.opacity=Math.abs(h)<0.005?'1':'0';
 }
 updateTcMarker();
 
-// ─── Event listeners ─────────────────────────────────
+// ── Event listeners ──
 document.getElementById('T-slider').addEventListener('input', function() {
-  T = parseFloat(this.value);
-  document.getElementById('T-val').textContent = T.toFixed(2);
+  T=parseFloat(this.value);
+  document.getElementById('T-val').textContent=T.toFixed(2);
   rebuildExpTable();
 });
-
 document.getElementById('h-slider').addEventListener('input', function() {
-  h = parseFloat(this.value);
-  document.getElementById('h-val').textContent = h.toFixed(2);
-  rebuildExpTable();
-  if (lattice) recalcTotals();
-  updateTcMarker();
+  h=parseFloat(this.value);
+  document.getElementById('h-val').textContent=h.toFixed(2);
+  rebuildExpTable(); if (lattice) recalcTotals(); updateTcMarker();
 });
-
 document.getElementById('N-select').addEventListener('change', function() {
-  const was = running; running = false;
-  N = parseInt(this.value);
+  const was=running; running=false;
+  N=parseInt(this.value);
   initLattice(); drawLattice(); drawMtChart();
   if (was) { running=true; if (!animId) animLoop(); }
 });
-
 document.getElementById('speed-slider').addEventListener('input', function() {
-  sweepsPerFrame = parseInt(this.value);
-  document.getElementById('speed-val').textContent = sweepsPerFrame;
+  sweepsPerFrame=parseInt(this.value);
+  document.getElementById('speed-val').textContent=sweepsPerFrame;
 });
-
 document.getElementById('start-btn').addEventListener('click', function() {
   if (running) { running=false; this.textContent='▶ Start'; }
-  else {
-    if (!lattice) initLattice();
-    running=true; this.textContent='⏸ Pause';
-    if (!animId) animLoop();
-  }
+  else { if (!lattice) initLattice(); running=true; this.textContent='⏸ Pause'; if (!animId) animLoop(); }
 });
-
 document.getElementById('reset-btn').addEventListener('click', function() {
   running=false;
   document.getElementById('start-btn').textContent='▶ Start';
   initLattice(); drawLattice(); drawMtChart();
 });
 
-initLattice();
-drawLattice();
-drawMtChart();
+// ── Boot ──
+requestAnimationFrame(() => {
+  resizeMtCanvas();
+  window.addEventListener('resize', () => { resizeMtCanvas(); drawMtChart(); });
+  initLattice(); drawLattice(); drawMtChart();
+});
 </script>
 </body>
 </html>
